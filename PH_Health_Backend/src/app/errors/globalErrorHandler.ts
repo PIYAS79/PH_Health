@@ -7,13 +7,8 @@ type Error_Source_Type = {
   message: string;
 }[];
 
-const Global_Error_Handler = (
-  err: any,
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  let Error_Title = "This is a server side error";
+const Global_Error_Handler = (err: any, req: Request, res: Response, next: NextFunction) => {
+  let Error_Title = err.name || "This is a server side error";
   let Error_Source: Error_Source_Type = [
     {
       path: "",
@@ -23,27 +18,27 @@ const Global_Error_Handler = (
   let status_code = err.status_code || httpStatus.INTERNAL_SERVER_ERROR;
 
   if (err instanceof Error) {
-    (Error_Title = err.message),
-      (Error_Source = [
+    Error_Title = err.name,
+      Error_Source = [
         {
           path: "",
           message: err.message,
         },
-      ]);
+      ];
   } else if (err instanceof Final_App_Error) {
-    (Error_Title = err.message),
-      (Error_Source = [
+    Error_Title = err.name,
+      Error_Source = [
         {
           path: "",
           message: err.message,
         },
-      ]);
+      ];
     status_code: err.status_code;
   }
 
   res.status(status_code).json({
-    // success: false,
-    // error_title: Error_Title,
+    success: false,
+    error_title: Error_Title,
     // error_source: Error_Source,
     // stack: err.stack,
     error: err,

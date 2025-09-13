@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt'
 
 const prisma = new PrismaClient();
 
-const Get_All_User_Service = async(data:any)=>{
+const Create_User_Admin_Service = async(data:any)=>{
     
     const hashed_pass:string = await bcrypt.hash(data.password,12);
     const user_data = {
@@ -28,6 +28,6 @@ const Get_All_User_Service = async(data:any)=>{
 
 
 export const User_Services = {
-    Get_All_User_Service,
+    Create_User_Admin_Service,
 
 }

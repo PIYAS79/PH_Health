@@ -3,11 +3,11 @@ import httpStatus from "http-status";
 import Async_Catch from "../../utils/try.code.js";
 import { User_Services } from "./user.services.js";
 
-const Get_All_User_Controller = Async_Catch(async (req: Request, res: Response, next: NextFunction) => {
-    const result = await User_Services.Get_All_User_Service(req.body);
+const Create_User_Admin_Controller = Async_Catch(async (req: Request, res: Response, next: NextFunction) => {
+    const result = await User_Services.Create_User_Admin_Service(req.body);
     res.status(httpStatus.OK).json({
       success: true,
-      message: "Successfully Get All Users",
+      message: "Admin created successfully",
       data: result,
     });
   }
@@ -15,5 +15,5 @@ const Get_All_User_Controller = Async_Catch(async (req: Request, res: Response, 
 
 
 export const User_Controllers = {
-    Get_All_User_Controller,
+    Create_User_Admin_Controller,
 }

@@ -5,7 +5,7 @@ import { User_Controllers } from './user.controllers.js';
 const router = express.Router();
 
 
-router.post('/',User_Controllers.Get_All_User_Controller);
+router.post('/',User_Controllers.Create_User_Admin_Controller);
 
 
 
