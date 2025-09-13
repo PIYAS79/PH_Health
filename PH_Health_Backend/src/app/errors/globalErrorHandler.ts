@@ -42,10 +42,10 @@ const Global_Error_Handler = (
   }
 
   res.status(status_code).json({
-    success: false,
-    error_title: Error_Title,
-    error_source: Error_Source,
-    stack: err.stack,
+    // success: false,
+    // error_title: Error_Title,
+    // error_source: Error_Source,
+    // stack: err.stack,
     error: err,
   });
 };
