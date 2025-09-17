@@ -9,8 +9,8 @@ import Route_Not_Found_Error from './errors/routeNotFound.js';
 const app:Application = express();
 
 
-app.use(express.json());
 app.use(express.urlencoded({extended:true}))
+app.use(express.json());
 app.use(cors());
 
 

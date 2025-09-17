@@ -5,7 +5,7 @@ import { Admin_Services } from "./admin.services.js";
 
 
 const Get_All_Admin_Controller = Async_Catch(async (req: Request, res: Response, next: NextFunction) => {
-    const result = await Admin_Services.Get_All_Admin_Service();
+  const result = await Admin_Services.Get_All_Admin_Service(req.query);
     res.status(httpStatus.OK).json({
       success: true,
       message: "Get all Admin successfully",
