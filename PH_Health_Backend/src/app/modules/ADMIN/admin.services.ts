@@ -125,4 +125,4 @@ export const Admin_Services = {
     Delete_Admin_and_User_Service,
     Soft_Delete_Admin_and_User_Service,
 
-}  
+}   
