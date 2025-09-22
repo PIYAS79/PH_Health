@@ -1,4 +1,4 @@
-type Options_Type = {
+export type Pagination_Options_Type = {
     page ? : number,
     limit ? : number,
     sortBy ? : string,
@@ -12,7 +12,7 @@ type Options_Return_Type = {
     sortOrder : string
 }
 
-const calculate_pagination = (options : Options_Type):Options_Return_Type=>{
+const calculate_pagination = (options : Pagination_Options_Type):Options_Return_Type=>{
     const page:number = Number(options.page) || 1;
     const limit:number = Number(options.limit) || 10;
     const skip:number = (Number(page)-1) * limit;

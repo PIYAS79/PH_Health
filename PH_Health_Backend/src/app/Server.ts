@@ -2,12 +2,14 @@ import express from "express";
 import cors from "cors";
 import app from "./App.js";
 import type { Server } from "http";
+import config from "../config/index.js";
 
 app.use(express.json());
 app.use(cors());
 
-const port = 5656;
 let server: Server;
+
+const port = config.port_number
 
 const main=async()=>{
   server = app.listen(port, () => {
