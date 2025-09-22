@@ -8,17 +8,17 @@ type Error_Source_Type = {
 }[];
 
 const Global_Error_Handler = (err: any, req: Request, res: Response, next: NextFunction) => {
-  let Error_Title = err.name || "This is a server side error";
+  let Error_Title = err.message || "This is a server side error";
   let Error_Source: Error_Source_Type = [
     {
       path: "",
-      message: "This is a server side error",
+      message: err.message || "This is a server side error",
     },
   ];
   let status_code = err.status_code || httpStatus.INTERNAL_SERVER_ERROR;
 
   if (err instanceof Error) {
-    Error_Title = err.name,
+    Error_Title = err.message,
       Error_Source = [
         {
           path: "",
@@ -26,14 +26,14 @@ const Global_Error_Handler = (err: any, req: Request, res: Response, next: NextF
         },
       ];
   } else if (err instanceof Final_App_Error) {
-    Error_Title = err.name,
+    Error_Title = err.message,
       Error_Source = [
         {
           path: "",
           message: err.message,
         },
       ];
-    status_code: err.status_code;
+    status_code = err.status_code;
   }
 
   res.status(status_code).json({
