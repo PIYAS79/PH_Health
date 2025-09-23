@@ -20,7 +20,7 @@ const Create_User_Admin_Service = async(data:any)=>{
         const create_admin = await tc.admin.create({
             data : data.admin
         })
-        return {create_user,create_admin};
+        return {create_admin};
     })
 
     return res;
