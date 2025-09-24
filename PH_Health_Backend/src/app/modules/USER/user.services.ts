@@ -1,14 +1,21 @@
 import { User_Role } from "@prisma/client";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from 'bcrypt'
+import Upload_To_Cloudinary from "../../utils/cloudinary.js";
 
 const prisma = new PrismaClient();
 
-const Create_User_Admin_Service = async(data:any)=>{
-    
-    const hashed_pass:string = await bcrypt.hash(data.password,12);
+const Create_User_Admin_Service = async(req:any)=>{
+
+    if(req.file){
+        console.log("inside");
+        const uploaded_file = await Upload_To_Cloudinary(req.file);
+        console.log({uploaded_file});
+        req.body.admin.profile_photo=uploaded_file?.secure_url
+    }
+    const hashed_pass:string = await bcrypt.hash(req.body.password,12);
     const user_data = {
-        email : data.admin.email,
+        email : req.body.admin.email,
         password : hashed_pass,
         role : User_Role.ADMIN
     }
@@ -18,7 +25,7 @@ const Create_User_Admin_Service = async(data:any)=>{
             data : user_data
         })
         const create_admin = await tc.admin.create({
-            data : data.admin
+            data : req.body.admin
         })
         return {create_admin};
     })
