@@ -17,14 +17,55 @@ model User {
   createdAt            DateTime    @default(now())
   updatedAt            DateTime    @updatedAt
   admin                Admin?
+  doctor               Doctor?
+  patient              Patient?
 
   @@map("users")
+}
+
+model Patient {
+  id            String   @id @unique @default(uuid())
+  email         String   @unique
+  name          String
+  profile_photo  String?
+  contact_number String?
+  address       String?
+  isDeleted     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(references: [email], fields: [email])
+
+  @@map("patients")
+}
+
+model Doctor {
+  id                    String   @id @default(uuid())
+  name                  String
+  email                 String   @unique
+  profile_photo         String?
+  contact_number        String
+  address               String
+  reg_number            String
+  experience            Int      @default(0)
+  gender                Gender
+  appointment_fee       Int
+  qualification         String
+  current_working_place String
+  designation           String
+  is_deleted            Boolean  @default(false)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  user User @relation(fields: [email], references: [email])
+
+  @@map("doctors")
 }
 
 model Admin {
   id             String   @id @default(uuid())
   name           String
-  email          String @unique
+  email          String   @unique
   profile_photo  String?
   contact_number String
   is_deleted     Boolean  @default(false)
@@ -47,4 +88,9 @@ enum User_Status {
   ACTIVE
   BLOCKED
   DELETED
+}
+
+enum Gender {
+  MALE
+  FEMALE
 }
