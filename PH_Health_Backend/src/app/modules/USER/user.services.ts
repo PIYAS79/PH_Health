@@ -6,6 +6,7 @@ import type { Request } from "express";
 import type { Pagination_Options_Type } from "../../global/pagination.js";
 import type { User_Query_Type } from "./user.interface.js";
 import calculate_pagination from "../../global/pagination.js";
+import type { JwtPayload } from "jsonwebtoken";
 
 const prisma = new PrismaClient();
 
@@ -115,6 +116,19 @@ const Get_All_User_Service = async (params: User_Query_Type, pagination: Paginat
             [pagination.sortBy]: pagination.sortOrder
         } : {
             createdAt: 'desc'
+        },
+        select:{
+            id:true,
+            email:true,
+            role:true,
+            need_password_change:true,
+            user_status:true,
+            createdAt:true,
+            updatedAt:true,
+            admin:true,
+            patient:true,
+            doctor:true,
+
         }
     });
     return {
@@ -128,10 +142,60 @@ const Get_All_User_Service = async (params: User_Query_Type, pagination: Paginat
 }
 
 const Update_User_Status_Service = async(id:string,status:User_Role)=>{
-    console.log(id,status);
-    
+    await prisma.user.findUniqueOrThrow({
+        where:{
+            id
+        }
+    })
+    const res = await prisma.user.update({
+        where:{
+            id
+        },
+        data:status,
+        select:{
+            id:true,
+            email:true,
+            role:true,
+            need_password_change:true,
+            user_status:true,
+            createdAt:true,
+            updatedAt:true
+        }
+    })
+    return res;
+}
 
-    return {}
+const Get_My_Profile_Data_Service = async(user:JwtPayload)=>{
+    const user_data = await prisma.user.findUniqueOrThrow({
+        where:{
+            email:user.email
+        },
+        select:{
+            id:true,
+            email:true,
+            role:true,
+            need_password_change:true,
+            user_status:true,
+        }
+    })
+    let profiledata;
+    if(user_data.role===User_Role.ADMIN || User_Role.SUPER_ADMIN){
+        profiledata = await prisma.admin.findUnique({
+            where:{email:user_data.email}
+        })
+    }
+    else     if(user_data.role===User_Role.DOCTOR){
+        profiledata = await prisma.doctor.findUnique({
+            where:{email:user_data.email}
+        })
+    }
+    else     if(user_data.role===User_Role.PATIENT){
+        profiledata = await prisma.patient.findUnique({
+            where:{email:user_data.email}
+        })
+    }
+
+    return {...user_data,...profiledata}
 }
 
 export const User_Services = {
@@ -139,5 +203,8 @@ export const User_Services = {
     Create_User_Doctor_Service,
     Create_User_Patient_Service,
     Get_All_User_Service,
-    Update_User_Status_Service
+    Update_User_Status_Service,
+    Get_My_Profile_Data_Service
 }
+
+

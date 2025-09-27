@@ -32,7 +32,6 @@ const Fetch_Refresh_Token_Controller = Async_Catch(async (req: Request, res: Res
     });
 })
 
-
 const Change_Password_Controller = Async_Catch(async (req: Request &{user?:JwtPayload}, res: Response) => {
     const result = await Auth_Services.Change_Password_Service(req.user,req.body);
     res.status(httpStatus.OK).json({

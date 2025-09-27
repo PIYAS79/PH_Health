@@ -50,7 +50,9 @@ const Zod_Create_Patient = z.object({
 });
 
 const Zod_Update_User_Status = z.object({
-    user_status: z.enum([User_Status.ACTIVE,User_Status.BLOCKED,User_Status.DELETED]),
+    body:z.object({
+        user_status: z.enum([User_Status.ACTIVE,User_Status.BLOCKED,User_Status.DELETED]),
+    })
 });
 
 export const User_Validation = {

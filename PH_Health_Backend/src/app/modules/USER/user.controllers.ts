@@ -4,6 +4,8 @@ import Async_Catch from "../../utils/try.code.js";
 import { User_Services } from "./user.services.js";
 import pick from "../../utils/pick_fields.js";
 import { queryable_fields_of_user } from "./user.constant.js";
+import type { JwtPayload } from "jsonwebtoken";
+import Final_App_Error from "../../errors/Final_App_Error.js";
 
 const Create_User_Admin_Controller = Async_Catch(async (req: Request, res: Response, next: NextFunction) => {
 
@@ -53,8 +55,6 @@ const Get_All_User_Controller = Async_Catch(async (req: Request, res: Response, 
 
 const Update_User_Status_Controller = Async_Catch(async (req: Request, res: Response, next: NextFunction) => {
   const {id} = req.params;
-  console.log(id);
-console.log(req.body);
   const result = await User_Services.Update_User_Status_Service(id as string,req.body);
   res.status(httpStatus.OK).json({
     success: true,
@@ -65,11 +65,25 @@ console.log(req.body);
 );
 
 
+const Get_My_Profile_Data_Controller = Async_Catch(async (req: Request &{user?:JwtPayload}, res: Response, next: NextFunction) => {
+  if(!req.user){
+    throw new Final_App_Error(httpStatus.UNAUTHORIZED,"Token not found");
+  }
+  const result = await User_Services.Get_My_Profile_Data_Service(req.user);
+  res.status(httpStatus.OK).json({
+    success: true,
+    message: "Get Profile Information successfully",
+    data: result,
+  });
+}
+);
+
 
 export const User_Controllers = {
   Create_User_Admin_Controller,
   Create_User_Doctor_Controller,
   Create_User_Patient_Controller,
   Get_All_User_Controller,
-  Update_User_Status_Controller
+  Update_User_Status_Controller,
+  Get_My_Profile_Data_Controller
 }

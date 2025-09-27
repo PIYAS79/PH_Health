@@ -3,7 +3,6 @@ import type z from "zod";
 
 
 const Validation_Request = (schema: z.ZodTypeAny) => async (req: Request, res: Response, next: NextFunction) => {
-    console.log(req.body);
     try {
         await schema.parseAsync({
             body: req.body
