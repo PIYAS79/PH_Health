@@ -1,0 +1,1 @@
+export const queryable_fields_of_user = ["email","search","role","user_status"]
