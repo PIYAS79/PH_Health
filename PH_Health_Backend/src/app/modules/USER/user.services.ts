@@ -239,9 +239,6 @@ const Update_Profile_Service = async (token_data: JwtPayload, req: Request) => {
     }
 
     return { ...user_data, ...profiledata }
-
-
-    return {};
 }
 
 

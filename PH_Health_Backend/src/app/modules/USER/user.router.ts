@@ -18,7 +18,8 @@ router.get('/', Check_Roles(User_Role.ADMIN, User_Role.SUPER_ADMIN), User_Contro
 router.patch('/:id/status', Check_Roles(User_Role.ADMIN, User_Role.SUPER_ADMIN), Validation_Request(User_Validation.Zod_Update_User_Status), User_Controllers.Update_User_Status_Controller);
 
 // fetch me 
-router.get('/me', Check_Roles(User_Role.SUPER_ADMIN, User_Role.ADMIN, User_Role.DOCTOR, User_Role.PATIENT), User_Controllers.Get_My_Profile_Data_Controller);
+router.get('/me',
+     Check_Roles(User_Role.SUPER_ADMIN, User_Role.ADMIN, User_Role.DOCTOR, User_Role.PATIENT), User_Controllers.Get_My_Profile_Data_Controller);
 
 router.post('/create-admin'
     , Check_Roles(User_Role.ADMIN, User_Role.SUPER_ADMIN),
