@@ -64,7 +64,6 @@ const Update_User_Status_Controller = Async_Catch(async (req: Request, res: Resp
 }
 );
 
-
 const Get_My_Profile_Data_Controller = Async_Catch(async (req: Request &{user?:JwtPayload}, res: Response, next: NextFunction) => {
   if(!req.user){
     throw new Final_App_Error(httpStatus.UNAUTHORIZED,"Token not found");
@@ -78,6 +77,18 @@ const Get_My_Profile_Data_Controller = Async_Catch(async (req: Request &{user?:J
 }
 );
 
+const Update_Profile_Controller = Async_Catch(async (req: Request &{user?:JwtPayload}, res: Response, next: NextFunction) => {
+  if(!req.user){
+    throw new Final_App_Error(httpStatus.UNAUTHORIZED,"Token not found");
+  }
+  const result = await User_Services.Update_Profile_Service(req.user,req);
+  res.status(httpStatus.OK).json({
+    success: true,
+    message: "Profile data update successfully",
+    data: result,
+  });
+}
+);
 
 export const User_Controllers = {
   Create_User_Admin_Controller,
@@ -85,5 +96,6 @@ export const User_Controllers = {
   Create_User_Patient_Controller,
   Get_All_User_Controller,
   Update_User_Status_Controller,
-  Get_My_Profile_Data_Controller
+  Get_My_Profile_Data_Controller,
+  Update_Profile_Controller
 }

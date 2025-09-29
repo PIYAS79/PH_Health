@@ -83,7 +83,7 @@ const Get_All_User_Service = async (params: User_Query_Type, pagination: Paginat
     const { page, limit, skip } = calculate_pagination(pagination);
     const { search, ...filter_field } = params;
     const search_conditions: Prisma.UserWhereInput[] = [];
-    const searchable_fields = ['email','role','user_status'];
+    const searchable_fields = ['email', 'role', 'user_status'];
     if (params.search) {
         search_conditions.push({
             OR: searchable_fields.map((field) => ({
@@ -103,7 +103,7 @@ const Get_All_User_Service = async (params: User_Query_Type, pagination: Paginat
             }))
         })
     }
-    const where_conditions: Prisma.UserWhereInput = search_conditions.length>0 ?{ AND: search_conditions }:{}
+    const where_conditions: Prisma.UserWhereInput = search_conditions.length > 0 ? { AND: search_conditions } : {}
 
     const total = await prisma.user.count({
         where: where_conditions
@@ -117,17 +117,17 @@ const Get_All_User_Service = async (params: User_Query_Type, pagination: Paginat
         } : {
             createdAt: 'desc'
         },
-        select:{
-            id:true,
-            email:true,
-            role:true,
-            need_password_change:true,
-            user_status:true,
-            createdAt:true,
-            updatedAt:true,
-            admin:true,
-            patient:true,
-            doctor:true,
+        select: {
+            id: true,
+            email: true,
+            role: true,
+            need_password_change: true,
+            user_status: true,
+            createdAt: true,
+            updatedAt: true,
+            admin: true,
+            patient: true,
+            doctor: true,
 
         }
     });
@@ -141,62 +141,111 @@ const Get_All_User_Service = async (params: User_Query_Type, pagination: Paginat
     };
 }
 
-const Update_User_Status_Service = async(id:string,status:User_Role)=>{
+const Update_User_Status_Service = async (id: string, status: User_Role) => {
     await prisma.user.findUniqueOrThrow({
-        where:{
+        where: {
             id
         }
     })
     const res = await prisma.user.update({
-        where:{
+        where: {
             id
         },
-        data:status,
-        select:{
-            id:true,
-            email:true,
-            role:true,
-            need_password_change:true,
-            user_status:true,
-            createdAt:true,
-            updatedAt:true
+        data: status,
+        select: {
+            id: true,
+            email: true,
+            role: true,
+            need_password_change: true,
+            user_status: true,
+            createdAt: true,
+            updatedAt: true
         }
     })
     return res;
 }
 
-const Get_My_Profile_Data_Service = async(user:JwtPayload)=>{
+const Get_My_Profile_Data_Service = async (user: JwtPayload) => {
     const user_data = await prisma.user.findUniqueOrThrow({
-        where:{
-            email:user.email
+        where: {
+            email: user.email,
+            user_status:"ACTIVE"
         },
-        select:{
-            id:true,
-            email:true,
-            role:true,
-            need_password_change:true,
-            user_status:true,
+        select: {
+            id: true,
+            email: true,
+            role: true,
+            need_password_change: true,
+            user_status: true,
         }
     })
     let profiledata;
-    if(user_data.role===User_Role.ADMIN || User_Role.SUPER_ADMIN){
+    if (user_data.role === User_Role.ADMIN || User_Role.SUPER_ADMIN) {
         profiledata = await prisma.admin.findUnique({
-            where:{email:user_data.email}
+            where: { email: user_data.email }
         })
     }
-    else     if(user_data.role===User_Role.DOCTOR){
+    else if (user_data.role === User_Role.DOCTOR) {
         profiledata = await prisma.doctor.findUnique({
-            where:{email:user_data.email}
+            where: { email: user_data.email }
         })
     }
-    else     if(user_data.role===User_Role.PATIENT){
+    else if (user_data.role === User_Role.PATIENT) {
         profiledata = await prisma.patient.findUnique({
-            where:{email:user_data.email}
+            where: { email: user_data.email }
         })
     }
 
-    return {...user_data,...profiledata}
+    return { ...user_data, ...profiledata }
 }
+
+const Update_Profile_Service = async (token_data: JwtPayload, req: Request) => {
+
+    if(req.file){
+        const cloudinary_response = await Upload_To_Cloudinary(req.file);
+        req.body.profile_photo = cloudinary_response?.secure_url
+    }
+    const user_data = await prisma.user.findUniqueOrThrow({
+        where: {
+            email: token_data.email,
+            user_status:"ACTIVE"
+        },
+        select: {
+            id: true,
+            email: true,
+            role: true,
+            need_password_change: true,
+            user_status: true,
+        }
+    })
+    let profiledata;
+    if (user_data.role === User_Role.ADMIN || User_Role.SUPER_ADMIN) {
+        profiledata = await prisma.admin.update({
+            where: { email: user_data.email },
+            data: req.body
+        })
+    }
+    else if (user_data.role === User_Role.DOCTOR) {
+        profiledata = await prisma.doctor.update({
+            where: { email: user_data.email },
+            data: req.body
+        })
+    }
+    else if (user_data.role === User_Role.PATIENT) {
+        profiledata = await prisma.patient.update({
+            where: { email: user_data.email },
+            data: req.body
+        })
+    }
+
+    return { ...user_data, ...profiledata }
+
+
+    return {};
+}
+
+
+
 
 export const User_Services = {
     Create_User_Admin_Service,
@@ -204,7 +253,8 @@ export const User_Services = {
     Create_User_Patient_Service,
     Get_All_User_Service,
     Update_User_Status_Service,
-    Get_My_Profile_Data_Service
+    Get_My_Profile_Data_Service,
+    Update_Profile_Service
 }
 
 
