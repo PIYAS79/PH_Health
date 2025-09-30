@@ -17,4 +17,13 @@ router.post('/',
         return Specialties_Controllers.Create_Specialties_Controller(req, res, next)
     });
 
+router.get('/',
+    Check_Roles(User_Role.ADMIN,User_Role.SUPER_ADMIN,User_Role.DOCTOR,User_Role.PATIENT),
+    Specialties_Controllers.Get_All_Specialties_Controller
+)
+
+router.delete('/:id',
+    Check_Roles(User_Role.ADMIN,User_Role.SUPER_ADMIN,User_Role.DOCTOR,User_Role.PATIENT),
+    Specialties_Controllers.Delete_Specialties_Controller
+)
 export const Specialties_Routes = router;

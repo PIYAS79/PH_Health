@@ -13,9 +13,28 @@ const Create_Specialties_Controller = Async_Catch(async (req: Request, res: Resp
     })
 })
 
+const Get_All_Specialties_Controller = Async_Catch(async (req: Request, res: Response) => {
+    const result = await Specialties_Services.Get_All_Specialties_Service();
+    res.status(httpStatus.OK).json({
+        success: true,
+        message: "Get All Specialties Successfully",
+        data: result
+    })
+})
+
+const Delete_Specialties_Controller = Async_Catch(async (req: Request, res: Response) => {
+    const result = await Specialties_Services.Delete_Specialties_Service(req);
+    res.status(httpStatus.OK).json({
+        success: true,
+        message: "Delete Specialties Successfully",
+        data: result
+    })
+})
 
 
 export const Specialties_Controllers = {
     Create_Specialties_Controller,
-    
+    Get_All_Specialties_Controller,
+    Delete_Specialties_Controller,
+
 }
