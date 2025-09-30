@@ -1,13 +1,12 @@
 import { PrismaClient, User_Status, type Doctor, type Prisma } from "@prisma/client";
 import calculate_pagination, { type Pagination_Options_Type } from "../../global/pagination.js";
 import type { Doctor_Query_Type } from "./doctor.interface.js";
-import Final_App_Error from "../../errors/Final_App_Error.js";
 
 const prisma = new PrismaClient();
 
 const Get_All_Doctor_Service = async (params: Doctor_Query_Type, pagination: Pagination_Options_Type) => {
     const { page, limit, skip } = calculate_pagination(pagination);
-    const { search, ...filter_field } = params;
+    const { search, specialties, ...filter_field } = params;
     const search_conditions: Prisma.DoctorWhereInput[] = [];
     const searchable_fields = ['name', 'email', 'current_working_place', 'designation'];
     if (params.search) {
@@ -20,7 +19,6 @@ const Get_All_Doctor_Service = async (params: Doctor_Query_Type, pagination: Pag
             }))
         })
     }
-    console.dir(search_conditions, { depth: Infinity });
     if (Object.keys(filter_field).length > 0) {
         search_conditions.push({
             AND: Object.keys(filter_field).map((field) => ({
@@ -28,6 +26,21 @@ const Get_All_Doctor_Service = async (params: Doctor_Query_Type, pagination: Pag
                     equals: (filter_field as any)[field]
                 }
             }))
+        })
+    }
+
+    if (specialties) {
+        search_conditions.push({
+            doctorSpecialties: {
+                some: {
+                    specialties: {
+                        title: {
+                            contains: specialties,
+                            mode: 'insensitive'
+                        }
+                    }
+                }
+            }
         })
     }
 
@@ -50,7 +63,11 @@ const Get_All_Doctor_Service = async (params: Doctor_Query_Type, pagination: Pag
             createdAt: 'desc'
         },
         include: {
-            doctorSpecialties: true
+            doctorSpecialties: {
+                include: {
+                    specialties: true
+                }
+            }
         }
     });
     return {

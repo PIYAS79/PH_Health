@@ -4,7 +4,7 @@ import { Doctor_Services } from "./doctor.services.js";
 import httpStatus from 'http-status';
 import pick from "../../utils/pick_fields.js";
 
-const queryable_field_of_doctor = ["name", "email", "search", "contact_number", "experience", "appointment_fee", "qualification", "current_working_place", "designation"]
+const queryable_field_of_doctor = ["name","specialties" ,"email", "search", "contact_number", "experience", "appointment_fee", "qualification", "current_working_place", "designation"]
 
 const Get_All_Doctor_Controller = Async_Catch(async (req: Request, res: Response) => {
     const selected_query_fields = pick(req.query, queryable_field_of_doctor);

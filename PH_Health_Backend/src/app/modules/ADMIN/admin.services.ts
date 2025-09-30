@@ -7,7 +7,6 @@ const prisma = new PrismaClient();
 
 
 const Get_All_Admin_Service = async (params: Admin_Query_Type, pagination: Pagination_Options_Type) => {
-    console.log({pagination});
     const { page, limit, skip } = calculate_pagination(pagination);
     const { search, ...filter_field } = params;
     const search_conditions: Prisma.AdminWhereInput[] = [];
