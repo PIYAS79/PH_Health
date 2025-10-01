@@ -1,5 +1,5 @@
-import { Prisma, PrismaClient, type Patient } from "@prisma/client";
-import type { Patient_Query_Type } from "./patient.interface.js";
+import { Prisma, PrismaClient, User_Status, type Patient } from "@prisma/client";
+import type { IPatientUpdate, Patient_Query_Type } from "./patient.interface.js";
 import type { Pagination_Options_Type } from "../../global/pagination.js";
 import calculate_pagination from "../../global/pagination.js";
 
@@ -30,9 +30,6 @@ const Get_All_Patient_Service = async (params: Patient_Query_Type, pagination: P
             }))
         })
     }
-    search_conditions.push({
-        isDeleted: false
-    })
     const where_conditions: Prisma.PatientWhereInput = { AND: search_conditions }
     const total = await prisma.patient.count({
         where: where_conditions
@@ -45,6 +42,9 @@ const Get_All_Patient_Service = async (params: Patient_Query_Type, pagination: P
             [pagination.sortBy]: pagination.sortOrder
         } : {
             createdAt: 'desc'
+        },
+        include: {
+            user: true
         }
     });
     return {
@@ -64,8 +64,101 @@ const Get_Single_Patient_Service = async (id: string): Promise<Patient | null> =
     return res;
 }
 
+const Update_Patient_Service = async (id: string, payload: Partial<IPatientUpdate>): Promise<Patient | null> => {
+    const { patientHealthData, medicalReport, ...will_update_data } = payload;
+    const patient = await prisma.patient.findUniqueOrThrow({
+        where: { id, isDeleted: false }
+    })
+    const result = await prisma.$transaction(async (tc) => {
+        await tc.patient.update({
+            where: {
+                id
+            },
+            data: will_update_data
+        })
+        // create or update patient health data
+        if (patientHealthData) {
+            await tc.patientHealthData.upsert({
+                where: {
+                    patientId: patient.id
+                },
+                update: patientHealthData,
+                create: { ...patientHealthData, patientId: patient.id }
+            })
+        }
+        // create medical info 
+        if (medicalReport) {
+            await tc.medicalReport.create({
+                data: { ...medicalReport, patientId: patient.id }
+            })
+        }
+        const final_patient_data = await tc.patient.findUnique({
+            where: {
+                id: patient.id
+            },
+            include: {
+                patientHealthData: true,
+                medicalReport: true
+            }
+        })
+        return final_patient_data
+    })
+    return result
+}
+
+const Delete_Patient_Service = async (id: string): Promise<Patient | null> => {
+    const result = await prisma.$transaction(async (tc) => {
+        await tc.patientHealthData.delete({
+            where: {
+                patientId: id
+            }
+        })
+        await tc.medicalReport.deleteMany({
+            where: {
+                patientId: id
+            }
+        })
+        const patient_data = await tc.patient.delete({
+            where: { id }
+        })
+        await tc.user.delete({
+            where: {
+                email: patient_data.email
+            }
+        })
+        return patient_data;
+    })
+    return result;
+}
+
+const Soft_Delete_Patient_Service = async (id: string): Promise<Patient | null> => {
+    const result = await prisma.$transaction(async (tc) => {
+        const deleted_patient = await tc.patient.update({
+            where: {
+                id
+            },
+            data: {
+                isDeleted: true
+            }
+        })
+        await tc.user.update({
+            where: {
+                email: deleted_patient.email
+            },
+            data: {
+                user_status: User_Status.DELETED
+            }
+        })
+        return deleted_patient;
+    })
+    return result;
+}
+
 
 export const Patient_Services = {
     Get_All_Patient_Service,
     Get_Single_Patient_Service,
+    Update_Patient_Service,
+    Delete_Patient_Service,
+    Soft_Delete_Patient_Service
 }
