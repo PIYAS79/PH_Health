@@ -61,8 +61,32 @@ model Doctor {
 
   user              User                @relation(fields: [email], references: [email])
   doctorSpecialties DoctorSpecialties[]
+  doctorSchedules   DoctorSchedules[]
 
   @@map("doctors")
+}
+
+model Schedule {
+  id              String            @id @default(uuid())
+  startDate       DateTime
+  endDate         DateTime
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  doctorSchedules DoctorSchedules[]
+
+  @@map("schedules")
+}
+
+model DoctorSchedules {
+  doctorId      String
+  doctor        Doctor   @relation(fields: [doctorId], references: [id])
+  scheduleId    String
+  schedule      Schedule @relation(fields: [scheduleId], references: [id])
+  idBooked      Boolean
+  appointmentId String?
+
+  @@id([doctorId, scheduleId])
+  @@map("doctor_schedules")
 }
 
 model Specialties {
