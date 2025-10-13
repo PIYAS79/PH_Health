@@ -3,11 +3,12 @@ import type { Create_Schedule_Type } from "./schedule.interface.js";
 import { addHours, addMinutes, format } from 'date-fns'
 import type { Pagination_Options_Type } from "../../global/pagination.js";
 import calculate_pagination from "../../global/pagination.js";
+import type { JwtPayload } from "jsonwebtoken";
 
 const prisma = new PrismaClient();
 
 
-const Create_Schedule_Service = async (payload: Create_Schedule_Type):Promise<Schedule[]> => {
+const Create_Schedule_Service = async (payload: Create_Schedule_Type): Promise<Schedule[]> => {
     const { startDate, endDate, startTime, endTime } = payload
     const currentDate = new Date(startDate);
     const lastDate = new Date(endDate);
@@ -58,11 +59,26 @@ const Create_Schedule_Service = async (payload: Create_Schedule_Type):Promise<Sc
 }
 
 
-const Get_All_Schedule_Service = async (params: any, pagination: Pagination_Options_Type) => {
+const Get_All_Schedule_Service = async (params: any, pagination: Pagination_Options_Type, user: JwtPayload) => {
     const { page, limit, skip } = calculate_pagination(pagination);
-    const { search, ...filter_field } = params;
+    const { startDateTimeQuery, endDateTimeQuery, ...filter_field } = params;
     const search_conditions: Prisma.ScheduleWhereInput[] = [];
 
+    if (startDateTimeQuery && endDateTimeQuery) {
+        search_conditions.push({
+            AND: [
+                {
+                    startDateTime: {
+                        gte: startDateTimeQuery
+                    }
+                }, {
+                    endDateTime: {
+                        lte: endDateTimeQuery
+                    }
+                }
+            ]
+        })
+    }
 
     if (Object.keys(filter_field).length > 0) {
         search_conditions.push({
@@ -74,11 +90,34 @@ const Get_All_Schedule_Service = async (params: any, pagination: Pagination_Opti
         })
     }
     const where_conditions: Prisma.ScheduleWhereInput = { AND: search_conditions }
-    const total = await prisma.schedule.count({
-        where: where_conditions
+
+
+    const doctorSchedule = await prisma.doctorSchedules.findMany({
+        where: {
+            doctor: {
+                email: user.email
+            }
+        }
     })
+
+    const doctorScheduleIds = doctorSchedule.map(one => one.scheduleId);
+    
+    const total = await prisma.schedule.count({
+        where: {
+            ...where_conditions,
+            id: {
+                notIn: doctorScheduleIds
+            }
+        },
+    })
+
     const res = await prisma.schedule.findMany({
-        where: where_conditions,
+        where: {
+            ...where_conditions,
+            id: {
+                notIn: doctorScheduleIds
+            }
+        },
         skip,
         take: limit,
         orderBy: pagination.sortBy && pagination.sortOrder ? {
@@ -99,5 +138,5 @@ const Get_All_Schedule_Service = async (params: any, pagination: Pagination_Opti
 
 export const Schedule_Services = {
     Create_Schedule_Service,
-Get_All_Schedule_Service
+    Get_All_Schedule_Service
 }

@@ -14,7 +14,7 @@ router.post('/',
 )
 
 router.get('/',
-    // Check_Roles(User_Role.ADMIN, User_Role.SUPER_ADMIN),
+    Check_Roles(User_Role.ADMIN, User_Role.SUPER_ADMIN,User_Role.DOCTOR),
     Schedule_Controllers.Get_All_Schedule_Controller
 )
 

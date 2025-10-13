@@ -13,5 +13,16 @@ router.post('/',
 )
 
 
+router.get('/my-schedule',
+    Check_Roles(User_Role.DOCTOR,User_Role.ADMIN,User_Role.SUPER_ADMIN),
+    Doctor_Schedule_Controllers.Get_All_Doctor_Schedule_Controller
+)
+
+router.delete('/:id',
+    Check_Roles(User_Role.DOCTOR,User_Role.ADMIN,User_Role.SUPER_ADMIN),
+    Doctor_Schedule_Controllers.Delete_Doctor_Schedule_Controller
+)
+
+
 
 export const Doctor_Schedule_Routes = router;
